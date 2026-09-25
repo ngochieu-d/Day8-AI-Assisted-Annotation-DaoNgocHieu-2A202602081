@@ -87,8 +87,8 @@ Trong quá trình trực tiếp kiểm tra và chỉnh sửa trên AnyLabeling, 
   * *Ca còn hạn chế:* Các xe ở rất xa dưới chân cầu do tín hiệu quang học quá yếu vẫn chưa vượt qua ngưỡng kích hoạt conf 0.25 ($R_{\text{small}} = 0.000$), do tập huấn luyện 12 ảnh ban đầu chưa chứa đủ số lượng mẫu xe nhỏ ở đường chân trời.
 
 ### Phân biệt ba nguồn thông tin và ca khó theo guideline
-- **Quan sát độc lập (`reports/BLIND_SCAN.md` trên `frame_0182.jpg`):** Mắt người đếm được 25 xe rõ ràng và 1 xe nghi ngờ (tổng 26 xe), ghi nhận trước nguy cơ AI bỏ sót xe tối màu ở cận cảnh đáy ảnh và cụm xe ở xa sát chân cầu.
-- **Lỗi pre-label đã sửa (`outputs/round1_diff.md` & `reports/REVIEW_LOG.csv`):** AI ban đầu chỉ tìm được 13 xe. Người gán nhãn đã thêm mới 14 xe (trong đó có đúng chiếc xe tối màu ở mép dưới `cx=0.433`), sửa 2 box ôm vệt đèn, xóa 1 box trùng lặp để đưa tổng số xe lên đúng 26 xe khớp hoàn toàn với quan sát độc lập.
+- **Quan sát độc lập (`reports/BLIND_SCAN.md` trên `frame_0227.jpg`):** Mắt người đếm được 25 xe bằng mắt thường, ghi nhận trước nguy cơ AI bỏ sót các xe tối màu ở làn sát dải phân cách trái và vẽ lệch box trên các xe có vệt đèn pha rọi sáng mặt đường.
+- **Lỗi pre-label đã sửa (`outputs/round1_diff.md` & `reports/REVIEW_LOG.csv`):** AI ban đầu chỉ phát hiện được 13 xe trong `frame_0227.jpg` (bỏ sót gần một nửa số lượng). Người gán nhãn đã thêm mới 13 xe bị bỏ sót (trong đó có các xe tối màu ở làn trái), sửa 2 box bị vẽ quá to ôm vệt đèn pha, và xóa 1 box nhận nhầm vùng phản quang, đưa tổng số xe hoàn thiện về đúng 25 xe, khớp hoàn toàn với quan sát độc lập.
 - **Mô tả ca khó theo guideline:** Tình huống xe ở xa trên làn đường sát chân cầu vượt phát sáng (`frame_0380.jpg`): Thân xe tối màu chìm hoàn toàn vào màn đêm, chỉ thấy hai đốm sáng đỏ. Người gán nhãn phải ước lượng vùng bao thân xe quanh cụm đèn theo dòng 17, đồng thời áp dụng dòng 21 để bỏ qua các box có chiều cao dưới 16 pixel nhằm tránh đưa các nhãn đoán mò thiếu nhất quán vào mô hình.
 
 ## 5. Kết luận và giới hạn

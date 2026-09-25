@@ -1,0 +1,25 @@
+# Vì sao chọn lô này?
+
+Trong 50 dòng đứng đầu `outputs/selection_round1.csv`, chọn năm frame bạn sẽ ưu tiên nếu chỉ có
+ngân sách rà năm ảnh. Ghi tên, điểm, thời điểm, thứ tự và lý do; tối thiểu một quyết định phải xét
+ảnh gần trùng hoặc trường hợp model không dự đoán được box:
+Nếu chỉ có ngân sách hạn hẹp để gán nhãn 5 ảnh, tôi đề xuất top 5 frame ưu tiên nhằm tối đa hóa thông tin học tập và tránh lãng phí vào các ảnh gần trùng (near-duplicates):
+1. **frame_0182.jpg** (Thứ tự 1, t = 72.8s, điểm tổng = 0.9591, U = 0.9182, A = 1.0, D = 1.0, 28 box đề xuất, 18 box mơ hồ): Frame có điểm bất định tổng hợp và số box mơ hồ cao nhất toàn bộ tập pool; chứa luồng xe đêm dày đặc ở làn giữa với nhiều xe tối màu bị AI bỏ sót, rất đáng giá để con người can thiệp.
+2. **frame_0369.jpg** (Thứ tự 2, t = 147.6s, điểm tổng = 0.9324, U = 0.9315, A = 0.8889, D = 1.0, 43 box đề xuất, 16 box mơ hồ): Cách frame 0182 gần 75 giây (đa dạng hóa thời gian), mật độ xe cực kỳ cao (43 box) với nhiều phương tiện kích thước khác nhau (xe tải, SUV) chạy song song gây che khuất.
+3. **frame_0099.jpg** (Thứ tự 8, t = 39.6s, điểm tổng = 0.9063, U = 0.9460, A = 0.7778, D = 1.0, 29 box đề xuất, 14 box mơ hồ): Nằm ở giai đoạn đầu video (t ~ 40s), có điểm bất định trung bình top 5 box cao nhất (U = 0.9460). Chọn frame này giúp mở rộng bao phủ trục thời gian ban đầu, thay vì chọn dồn các frame rank 3, 4, 5 vốn tập trung sát mốc 130s-152s.
+4. **frame_0227.jpg** (Thứ tự 11, t = 90.8s, điểm tổng = 0.8915, U = 0.9164, A = 0.7778, D = 1.0, 37 box đề xuất, 14 box mơ hồ): Nằm ở khoảng giữa video (t = 90.8s, cách frame 0182 khoảng 18s và frame 0369 khoảng 56s), U vượt trội (>0.91) và chứa 37 box. Tôi ưu tiên frame này thay vì chọn tiếp các frame rank 3 (`frame_0380`) hay rank 4 (`frame_0326`) vì cụm thời gian 130s-152s đã có đại diện mạnh nhất là `frame_0369`.
+5. **frame_0270.jpg** (Thứ tự 13, t = 108.0s, điểm tổng = 0.8878, U = 0.9089, A = 0.7778, D = 1.0, 35 box đề xuất, 14 box mơ hồ): Bổ sung mốc t = 108s, tạo nên chuỗi phân bố thời gian đều đặn (~40s, ~73s, ~91s, ~108s, ~148s). Quyết định này giúp loại bỏ hoàn toàn các frame gần trùng (như rank 6 `frame_0372` t=148.8s trùng sát nút với frame 0369 t=147.6s, hay rank 12 `frame_0330` t=132.0s trùng với rank 5 `frame_0331` t=132.4s).
+
+Ba frame thuộc lô 12 ảnh model chọn và bằng chứng trong CSV/ảnh contact sheet:
+1. **frame_0182.jpg** (Rank 1 trong CSV): Điểm số cao nhất 0.9591, A = 1.0 (chuẩn hóa tối đa với 18 box mơ hồ). Trên contact sheet `selection_round1.jpg`, ảnh cho thấy nhiều xe chạy ngược chiều đèn pha trắng chói lòa và xe làn trong cùng bị bóng tối bao phủ khiến mô hình phân vân tột độ.
+2. **frame_0369.jpg** (Rank 2 trong CSV): Điểm số 0.9324, U = 0.9315, có tới 43 box phát hiện. Trên contact sheet, đây là khung cảnh mật độ giao thông đông đúc nhất, xe di chuyển sát nhau trên nhiều làn.
+3. **frame_0331.jpg** (Rank 5 trong CSV): Điểm số 0.9154, chứa lượng box cao nhất lô (47 box, 18 box mơ hồ A = 1.0). Trên contact sheet, ảnh xuất hiện xe tải lớn và nhiều vệt sáng đèn pha phản chiếu trên mặt đường ướt, làm mô hình sinh ra nhiều box sai lệch và box trùng lặp.
+
+Một frame có điểm cao nhưng không chọn hoặc một frame có điểm thấp vẫn nên xem, và lý do:
+- **Frame điểm cao nhưng không chọn:** `frame_0372.jpg` (Rank 6, score = 0.9101, U = 0.9202, t = 148.8s). Mặc dù nằm trong top 6 ứng viên có điểm bất định cao nhất toàn bộ tập dữ liệu, frame này đã bị thuật toán Active Learning loại bỏ do vi phạm ràng buộc thời gian tối thiểu `MIN_GAP_S = 2.0s`. Cụ thể, nó chỉ cách `frame_0369.jpg` (Rank 2, t = 147.6s) vỏn vẹn 1.2 giây. Vì camera đặt cố định trên cầu vượt, hai bức ảnh cách nhau 1.2s có luồng xe và bối cảnh gần như giống hệt nhau (near-duplicates). Nếu chọn cả hai sẽ gây lãng phí nghiêm trọng ngân sách gán nhãn mà không mang lại giá trị tri thức mới cho mô hình.
+- **Frame điểm thấp vẫn nên xem:** `frame_0002.jpg` (Rank 18, score = 0.8658, t = 0.8s) hoặc các frame cuối bảng như `frame_0014.jpg` (Rank 265, score = 0.6140, t = 5.6s). Ở các frame đầu video lúc đường vắng, mô hình dự đoán rất tự tin (ít box mơ hồ nên điểm A thấp). Tuy nhiên, con người vẫn nên xem kiểm tra để tránh hiện tượng mô hình "tự tin nhưng sai hoàn toàn" (overconfident false negative) — ví dụ bỏ sót hoàn toàn một chiếc xe tải tối màu chạy đơn độc mà không hề sinh ra box nào (empty detection).
+
+Điều phép chọn này chưa chứng minh về chất lượng mô hình:
+Điểm bất định (Uncertainty score) cao chỉ chứng minh rằng mô hình hiện tại **đang phân vân và không chắc chắn** về các box trong bức ảnh đó, **hoàn toàn không chứng minh hoặc bảo đảm** rằng việc đưa ảnh đó vào huấn luyện sẽ giúp mô hình cải thiện hiệu năng (AP50). Cụ thể:
+1. Nếu một ảnh có độ bất định cao do nhiễu vật lý (như ánh đèn pha xe đối diện làm lóa ống kính, vệt đèn phản chiếu trên mặt đường cao tốc ban đêm, hạt nhiễu ISO cao của camera), việc gán nhãn bức ảnh đó chỉ khiến mô hình cố gắng khớp với nhiễu cục bộ thay vì học được đặc trưng tổng quát.
+2. Việc chọn mẫu chỉ dựa trên phân phối không gian của tập pool chưa gán nhãn, không đảm bảo rằng tri thức thu được sẽ khớp với phân phối của 20 ảnh trong tập kiểm thử (test set).

@@ -1,0 +1,6 @@
+round,frame_id,object,action,rule_or_reason
+1,frame_0182.jpg,xe tối màu cận cảnh mép dưới,added,AI bỏ sót xe trong bóng tối ở đáy ảnh; thêm box ôm sát thân xe theo đúng quan sát blind scan và GUIDELINE_LABEL.md
+1,frame_0182.jpg,xe phía trước làn phải bị vẽ box quá to,edited,Thu nhỏ box từ w=0.099 h=0.095 về w=0.084 h=0.090 do AI bắt nhầm vệt đèn pha rọi dưới đường; chỉnh ôm sát thân xe
+1,frame_0182.jpg,xe con làn giữa có đèn pha rõ,accepted,Box AI gợi ý đã ôm khít thân xe và đèn (IoU > 0.90) đúng quy tắc gán nhãn nên giữ nguyên
+1,frame_0099.jpg,xe bị AI chỉ khoanh vùng đầu xe,edited,Mở rộng box từ w=0.079 h=0.082 lên w=0.111 h=0.098 do AI chỉ bắt được cụm đèn sáng; kéo rộng bao trọn thân xe theo dòng 17 guideline
+1,frame_0331.jpg,box trùng lặp và vệt phản quang đèn pha,deleted,AI vẽ box trùng lặp và nhận nhầm vùng sáng phản chiếu trên mặt đường ướt; xóa bỏ theo mục ánh đèn phản chiếu của guideline
